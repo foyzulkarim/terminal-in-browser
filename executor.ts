@@ -1,19 +1,18 @@
-console.log("hello world");
 import { Worker, workerData, WorkerOptions } from "worker_threads";
 import { exec } from "child_process";
 
-const run = () => {
-  const data = {   
-    command: "ls -la",
+export const run = (c: string) => {
+  const data = {
+    command: c,
+  };
+
+  const r = (m: string): string => {
+    return m;
   };
 
   const worker = new Worker("./worker.js", { workerData: data });
   worker.on("message", (msg) => {
-    console.log("Message", msg);
-  });
-  worker.on("exit", (code) => {
-    console.log("Bye bye", code);
+    console.log(msg);
+    return r(msg);
   });
 };
-
-run();
