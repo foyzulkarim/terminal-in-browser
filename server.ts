@@ -1,5 +1,5 @@
 import express = require("express");
-import { run  } from "./executor";
+import { run } from "./executor";
 // Create a new express app instance
 const app: express.Application = express();
 
@@ -10,8 +10,13 @@ app.get("/", function (req: express.Request, res: express.Response) {
 
 app.get("/execute", function (req: express.Request, res: express.Response) {
   const command = req.query.command as string;
-  const output = run(command);
-  res.send(output);
+  run(command).then(function (result: any) {
+    console.log(result);
+    res.send(result.data);
+  })
+  .catch(function (err) {
+    res.send(err);
+  });
 });
 
 app.listen(3000, function () {
