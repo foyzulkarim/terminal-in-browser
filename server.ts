@@ -1,16 +1,21 @@
 import express = require("express");
+var cors = require('cors');
 const find = require("find-process");
 import { Server, Socket } from "socket.io";
 import { run } from "./executor";
 // Create a new express app instance
 const app: express.Application = express();
+app.use(cors());
 
-const httpServer = require("http").createServer(app);
-const options = {  };
-const io = require("socket.io")(httpServer, options);
+var http = require('http').Server(app);
+const options = {
+  path: "/my-custom-path/"
+};
+var io = require('socket.io')(http);
 
 io.on("connection", (socket: Socket) => {
   console.log('connected');
+  socket.emit("hello", "world");
 });
 
 app.get("/", function (req: express.Request, res: express.Response) {
@@ -64,6 +69,10 @@ app.get("/kill", function (req: express.Request, res: express.Response) {
   res.send("Killed");
 });
 
-app.listen(3000, function () {
-  console.log("App is listening on port 3000!");
+app.listen(4000, function() {
+  console.log('listening on localhost:4000');
 });
+
+http.listen(4001, function() {
+  console.log('listening on localhost:4001');
+})
