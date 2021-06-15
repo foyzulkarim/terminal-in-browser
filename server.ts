@@ -1,5 +1,5 @@
 import express = require("express");
-var cors = require('cors');
+var cors = require("cors");
 const find = require("find-process");
 import { Server, Socket } from "socket.io";
 import { run } from "./executor";
@@ -7,28 +7,27 @@ import { run } from "./executor";
 const app: express.Application = express();
 app.use(cors());
 
-var http = require('http').Server(app);
-const options = {
-  path: "/my-custom-path/"
-};
-var io = require('socket.io')(http);
+var http = require("http").Server(app);
 
-io.on("connection", (socket: Socket) => {
-  console.log('connected');
-  socket.emit("hello", "world");
+var io = require("socket.io")(http);
+let socket: Socket;
+
+io.on("connection", (s: Socket) => {
+  console.log("connected");
+  socket = s;
+  socket.emit("hello", new Date());
 });
 
 app.get("/", function (req: express.Request, res: express.Response) {
-  console.log(req.params, req.query);
-  res.send("Hello World!");
+  res.send(`Hello World! ${new Date()}`);
 });
 
 app.get("/execute", function (req: express.Request, res: express.Response) {
   const command = req.query.command as string;
-  run(command)
+  run(command,  socket)
     .then(function (result: any) {
-      // console.log(result);
-      res.send(result.data);
+      // console.log(result);      
+      res.status(200).send();
     })
     .catch(function (err) {
       res.send(err);
@@ -69,10 +68,10 @@ app.get("/kill", function (req: express.Request, res: express.Response) {
   res.send("Killed");
 });
 
-app.listen(4000, function() {
-  console.log('listening on localhost:4000');
+// app.listen(4000, function() {
+//   console.log('listening on localhost:4000');
+// });
+const port = 4000;
+http.listen(port, function () {
+  console.log("listening on localhost:" + port);
 });
-
-http.listen(4001, function() {
-  console.log('listening on localhost:4001');
-})
