@@ -37,9 +37,6 @@
   }
 }
 
-.terminal-hidden {
-  background: #252a33;
-  color: #252a33;
-  border: none;
-  outline: none;
+.container {  
+  width: 100%;
 }

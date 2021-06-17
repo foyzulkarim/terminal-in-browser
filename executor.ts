@@ -2,7 +2,7 @@ import { Worker, workerData, WorkerOptions } from "worker_threads";
 import { exec } from "child_process";
 import { Socket } from "socket.io";
 
-export const run = (c: string, socket: Socket) => {
+export const run = (c: string[], socket: Socket) => {
   return new Promise((resolve, reject) => {
     const data = {
       command: c,

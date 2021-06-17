@@ -3,38 +3,8 @@ import logo from "./logo.svg";
 import axios from "axios";
 import io from "socket.io-client";
 import "./App.css";
-import Terminal, { ColorMode, LineType } from "react-terminal-ui";
-
-const TerminalController = (props = {}) => {
-  const [terminalLineData, setTerminalLineData] = useState([
-    { type: LineType.Output, value: "Welcome to the React Terminal UI Demo!" },
-    { type: LineType.Input, value: "Some previous input received" },
-  ]);
-  // Terminal has 100% width by default so it should usually be wrapped in a container div
-
-  const handleInput = (input: string) => {
-    terminalLineData.push({ type: LineType.Input, value: input });
-    setTerminalLineData(terminalLineData);
-  };
-
-  useEffect(() => {
-    const inputElement = document.querySelector(
-      ".terminal-hidden"
-    ) as HTMLInputElement;
-    inputElement.placeholder = "";
-  });
-
-  return (
-    <div className="container">
-      <Terminal
-        name="React Terminal Usage Example"
-        colorMode={ColorMode.Dark}
-        lineData={terminalLineData}
-        onInput={handleInput}
-      />
-    </div>
-  );
-};
+import Terminal from "terminal-in-react";
+import { useRef } from "react";
 
 function App() {
   const endpoint = "http://localhost:4000";
@@ -43,8 +13,10 @@ function App() {
   const [pid, setPid] = useState(0);
   const [isOngoing, setIsOngoing] = useState(false);
   const [command, setCommand] = useState("");
+  const printFn = useRef();
+  const [s, setS] = useState();
 
-  useEffect(() => {
+  const connectWithServer = () => {
     console.log("hello");
     const socket = io(endpoint, {
       // path: "/",
@@ -53,6 +25,7 @@ function App() {
     console.log(socket);
     socket.on("connect", () => {
       console.log(socket.id); // x8WIv7-mJelg7on_ALbx
+      setS(socket);
     });
 
     socket.on("hello", (msg: any) => {
@@ -60,15 +33,20 @@ function App() {
       setText(msg.data);
       setPid(msg.pid);
 
-      let data = terminalLineData;
-      data.push({ type: LineType.Input, value: msg.data });
-      setTerminalLineData(data);
+      //let data = terminalLineData;
+      // data.push({ type: LineType.Input, value: msg.data });
+      //setTerminalLineData(data);
+      console.log(printFn);
 
       if (msg.flag === "ONGOING") {
         setIsOngoing(true);
-      } else setIsOngoing(false);
+        printFn.current && printFn.current(msg.data);
+      } else {
+        setIsOngoing(false);
+        printFn.current && printFn.current("DONE");
+      };
     });
-  });
+  };
 
   const onBlur = (v: any) => {
     setCommand(v.target.value);
@@ -82,25 +60,31 @@ function App() {
     axios.get(`http://localhost:4000/kill?pid=${pid}`);
   };
 
-  const [terminalLineData, setTerminalLineData] = useState([
-    { type: LineType.Output, value: "Welcome to the React Terminal UI Demo!" },
-    { type: LineType.Input, value: "Some previous input received" },
-  ]);
-  // Terminal has 100% width by default so it should usually be wrapped in a container div
+  const [emulatorState, setEmulatorState] = useState("");
+  const [inputStr, setInputStr] = useState("");
 
-  const handleInput = (input: string) => {
-    let data = terminalLineData;
-    data.push({ type: LineType.Input, value: input });
-    setTerminalLineData(data);
-    axios.get(`http://localhost:4000/execute?command=${input}`);
+  const showMsg = (s: string) => "Hello World" + s;
+
+  const handleCommand = (input: string, print: Function) => {
+    console.log(input, input.join(" "));
+    printFn.current = print;
+    // if (!s._callbacks.$hello) {
+    //   s.on("hello", (msg: any) => {
+    //     console.log(msg);
+    //     setText(msg.data);
+    //     setPid(msg.pid);
+
+    //     console.log(print);
+    //     print(msg.data);
+
+    //     if (msg.flag === "ONGOING") {
+    //       setIsOngoing(true);
+    //     } else setIsOngoing(false);
+    //   });
+    // }
+
+    axios.get(`http://localhost:4000/execute?command=${input.join(" ")}`);
   };
-
-  useEffect(() => {
-    const inputElement = document.querySelector(
-      ".terminal-hidden"
-    ) as HTMLInputElement;
-    inputElement.placeholder = "";
-  });
 
   return (
     <div
@@ -112,14 +96,26 @@ function App() {
         backgroundColor: "black",
       }}
     >
-      <div className="container">
-        <Terminal
-          name="React Terminal Usage Example"
-          colorMode={ColorMode.Dark}
-          lineData={terminalLineData}
-          onInput={handleInput}
-        />
-      </div>
+      <button onClick={connectWithServer}>Connect</button>
+      <Terminal
+        color="green"
+        backgroundColor="black"
+        barColor="black"
+        style={{ fontWeight: "bold", fontSize: "1em" }}
+        commands={{
+          "open-google": () => window.open("https://www.google.com/", "_blank"),
+          showmsg: showMsg,
+          popup: () => alert("Terminal in React"),
+        }}
+        description={{
+          "open-google": "opens google.com",
+          showmsg: "shows a message",
+          alert: "alert",
+          popup: "alert",
+        }}
+        msg="You can write anything here. Example - Hello! My name is Foo and I like Bar."
+        commandPassThrough={handleCommand}
+      />
     </div>
   );
 }

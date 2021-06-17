@@ -24,7 +24,8 @@ app.get("/", function (req: express.Request, res: express.Response) {
 
 app.get("/execute", function (req: express.Request, res: express.Response) {
   const command = req.query.command as string;
-  run(command,  socket)
+  const commands = command.split('&&');
+  run(commands,  socket)
     .then(function (result: any) {
       // console.log(result);      
       res.status(200).send();
