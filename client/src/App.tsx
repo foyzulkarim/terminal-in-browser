@@ -15,7 +15,15 @@ function App() {
   const [isOngoing, setIsOngoing] = useState(false);
   const [command, setCommand] = useState("");
   const printFn = useRef();
+  const [isConnected, setIsConnected] = useState(false);
+
   const [appSocket, setAppSocket] = useState<any>();
+
+  useEffect(() => {
+    if (!isConnected) {
+      connectWithServer();
+    }
+  }, [isConnected]);
 
   const connectWithServer = () => {
     console.log("hello");
@@ -27,6 +35,7 @@ function App() {
     socket.on("connect", () => {
       console.log(socket.id); // x8WIv7-mJelg7on_ALbx
       setAppSocket(socket);
+      setIsConnected(true);
     });
 
     // socket.on("hello", (msg: any) => {
@@ -78,8 +87,10 @@ function App() {
           setIsOngoing(true);
           print(msg.data);
         } else {
-          setIsOngoing(false);
           print("Done");
+          setIsOngoing(false);
+          //print(msg.data);
+          
         }
       });
     }
@@ -99,7 +110,7 @@ function App() {
         backgroundColor: "black",
       }}
     >
-      <button onClick={connectWithServer}>Connect</button>
+      {!isConnected && <button onClick={connectWithServer}>Connect</button>}
       <Terminal
         color="green"
         backgroundColor="black"
