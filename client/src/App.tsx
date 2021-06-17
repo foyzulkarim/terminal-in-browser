@@ -72,7 +72,7 @@ function App() {
         setText(msg.data);
         setPid(msg.pid);
 
-        console.log(print);        
+        console.log(print);
 
         if (msg.flag === "ONGOING") {
           setIsOngoing(true);
@@ -84,7 +84,9 @@ function App() {
       });
     }
 
-    axios.get(`http://localhost:4000/execute?command=${input.join(" ")}`);
+    const body = { command: input.join(" ") };
+
+    axios.post(`http://localhost:4000/execute`, body);
   };
 
   return (
