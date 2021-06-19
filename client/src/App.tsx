@@ -81,21 +81,17 @@ function App() {
         setText(msg.data);
         setPid(msg.pid);
 
-        console.log(print);
-
         if (msg.flag === "ONGOING") {
           setIsOngoing(true);
           print(msg.data);
         } else {
           print("Done");
           setIsOngoing(false);
-          //print(msg.data);
-          
         }
       });
     }
 
-    const body = { command: input.join(" ") };
+    const body = { id: appSocket.id, command: input.join(" ") };
 
     axios.post(`http://localhost:4000/execute`, body);
   };
