@@ -1,22 +1,15 @@
-import React, { useEffect, useState } from "react";
-import logo from "./logo.svg";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import io, { Socket } from "socket.io-client";
+import io from "socket.io-client";
 import "./App.css";
 import Terminal from "terminal-in-react";
-import { useRef } from "react";
-import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import { SocketEvents, ProcessFlags } from "./Models"
 
 function App() {
   const endpoint = "http://localhost:4000";
 
-  const [text, setText] = useState("Hello world");
   const [pid, setPid] = useState(0);
-  const [isOngoing, setIsOngoing] = useState(false);
-  const [command, setCommand] = useState("");
-  const printFn = useRef();
   const [isConnected, setIsConnected] = useState(false);
-
   const [appSocket, setAppSocket] = useState<any>();
 
   useEffect(() => {
@@ -28,72 +21,40 @@ function App() {
   const connectWithServer = () => {
     console.log("hello");
     const socket = io(endpoint, {
-      // path: "/",
       transports: ["websocket"],
     });
     console.log(socket);
     socket.on("connect", () => {
-      console.log(socket.id); // x8WIv7-mJelg7on_ALbx
+      console.log(socket.id); //eg. x8WIv7-mJelg7on_ALbx
       setAppSocket(socket);
       setIsConnected(true);
     });
-
-    // socket.on("hello", (msg: any) => {
-    //   console.log(msg);
-    //   setText(msg.data);
-    //   setPid(msg.pid);
-
-    //   //let data = terminalLineData;
-    //   // data.push({ type: LineType.Input, value: msg.data });
-    //   //setTerminalLineData(data);
-    //   console.log(printFn);
-
-    //   if (msg.flag === "ONGOING") {
-    //     setIsOngoing(true);
-    //     printFn.current && printFn.current(msg.data);
-    //   } else {
-    //     setIsOngoing(false);
-    //     printFn.current && printFn.current("DONE");
-    //   }
-    // });
   };
-
-  const onBlur = (v: any) => {
-    setCommand(v.target.value);
-  };
-
-  const sendCommand = () => {
-    axios.get(`http://localhost:4000/execute?command=${command}`);
-  };
-
-  const cancelCommand = () => {
-    axios.get(`http://localhost:4000/kill?pid=${pid}`);
-  };
-
-  const showMsg = (s: string) => "Hello World" + s;
 
   const handleCommand = (input: any, print: Function) => {
-    console.log(input, input.join(" "));
-    // printFn.current = print;
-    if (!appSocket._callbacks.$hello) {
-      appSocket.on("hello", (msg: any) => {
+    console.log(appSocket._callbacks);
+    const fn = `$${SocketEvents.MESSAGE}`;
+    if (!appSocket._callbacks[fn]) {
+      appSocket.on(SocketEvents.MESSAGE, (msg: any) => {
         console.log(msg);
-        setText(msg.data);
         setPid(msg.pid);
 
-        if (msg.flag === "ONGOING") {
-          setIsOngoing(true);
+        if (msg.flag === ProcessFlags.ONGOING.toString()) {
           print(msg.data);
         } else {
-          print("Done");
-          setIsOngoing(false);
+          print(msg.flag);
         }
       });
     }
 
-    const body = { id: appSocket.id, command: input.join(" ") };
-
-    axios.post(`http://localhost:4000/execute`, body);
+    if (input[0] === 'cancel') {
+      const body = { id: appSocket.id, pid: pid };
+      axios.post(`http://localhost:4000/kill`, body);
+    }
+    else {
+      const body = { id: appSocket.id, command: input.join(" ") };
+      axios.post(`http://localhost:4000/execute`, body);
+    }
   };
 
   return (
@@ -114,8 +75,8 @@ function App() {
         style={{ fontWeight: "bold", fontSize: "1em" }}
         commands={{
           "open-google": () => window.open("https://www.google.com/", "_blank"),
-          showmsg: showMsg,
           popup: () => alert("Terminal in React"),
+          // cancel: cancelCommand,
         }}
         description={{
           "open-google": "opens google.com",

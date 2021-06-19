@@ -1,7 +1,7 @@
 # Terminal in browser
 Welcome to the repo. 
 
-## YouTube Demo
+## YouTube demo
 
 [![Watch demo](https://user-images.githubusercontent.com/497812/122639706-e7f10d00-d12d-11eb-8b9f-e78456d3d58b.png)](https://www.youtube.com/embed/04YGW2zrjiY)
 

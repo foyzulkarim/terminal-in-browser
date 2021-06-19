@@ -1,49 +1,35 @@
 import { parentPort, workerData, MessagePort } from "worker_threads";
 import { exec, ChildProcess } from "child_process";
+import { WorkerDataType, WorkerTaskResponse, ProcessFlags } from "./Models";
 
-const cb = (e: any, d: string, se: string): void => {
-  console.log("DONE", d);
+const dataParameter: WorkerDataType = workerData as WorkerDataType;
 
-  const p = parentPort as MessagePort;
-  p.postMessage({ flag: "END", pid: proc.pid, data: d, id: workerData.id });
+const callbackFn = (errror: any, data: string): void => {
+  // console.log("DONE", d);
+  const parent = parentPort as MessagePort;
+  const processResponse: WorkerTaskResponse = {
+    flag: ProcessFlags.DONE.toString(),
+    pid: proc.pid,
+    data: data,
+    clientId: dataParameter.clientId,
+  };
+  parent.postMessage(processResponse);
 };
 
-const proc: ChildProcess = exec(workerData.command, cb);
+const STDOUT_ON_DATA_EVENT = 'data';
+
+const proc: ChildProcess = exec(dataParameter.command, callbackFn);
 console.dir(proc.pid);
 if (proc != null && proc.stdout != null) {
-  proc.stdout.on("data", (data: string) => {
-    console.log("ONGOING",workerData.id, data);
-    const p = parentPort as MessagePort;
-    const msg = {
-      flag: "ONGOING",
+  proc.stdout.on(STDOUT_ON_DATA_EVENT, (data: string) => {
+    console.log("ONGOING", dataParameter.clientId, data);
+    const parent = parentPort as MessagePort;
+    const processResponse: WorkerTaskResponse = {
+      flag: ProcessFlags.ONGOING.toString(),
       pid: proc.pid,
       data: data,
-      id: workerData.id,
-    };    
-    p.postMessage(msg);
+      clientId: dataParameter.clientId,
+    };
+    parent.postMessage(processResponse);
   });
 }
-
-// var exec_commands = (commands: string[]) => {
-//   var command = commands.shift();
-//   if (command) {
-//     const cb = (e: any, d: string, se: string): void => {
-//       console.log("DONE", d);
-
-//       const p = parentPort as MessagePort;
-//       p.postMessage({ flag: "END", pid: proc.pid, data: d });
-//     };
-//     const proc: ChildProcess = exec(command, cb);
-//     console.dir(proc.pid);
-//     if (proc != null && proc.stdout != null) {
-//       proc.stdout.on("data", (data: string) => {
-//         console.log("ONGOING", data);
-//         const p = parentPort as MessagePort;
-//         p.postMessage({ flag: "ONGOING", pid: proc.pid, data: data });
-//       });
-//     }
-//     if (commands.length) exec_commands(commands);
-//   }
-// };
-
-// exec_commands(workerData.command);
