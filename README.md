@@ -1,5 +1,11 @@
 # Terminal in browser
-Welcome to the repo. 
+Welcome to the repo. 🙂
+This is an adventurous project where I aimed to take inputs as terminal commands in browser and execute those commands in server, and through websocket protocol show the actual terminal updates into the browser in real time.
+I have tested to executing multiple long-running commands from different browser in parallel, and verified each browser only receiving own command progress results. 
+
+## Architecture diagram
+
+![alt text](https://raw.githubusercontent.com/foyzulkarim/terminal-in-browser/main/terminal-in-browser.png)
 
 ## YouTube demo
 
