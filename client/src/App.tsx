@@ -3,7 +3,7 @@ import axios from "axios";
 import io from "socket.io-client";
 import "./App.css";
 import Terminal from "terminal-in-react";
-import { SocketEvents, ProcessFlags } from "./Models"
+import { SocketEvents, ProcessFlags } from "./Models";
 
 function App() {
   const endpoint = "http://localhost:4000";
@@ -42,16 +42,15 @@ function App() {
         if (msg.flag === ProcessFlags.ONGOING.toString()) {
           print(msg.data);
         } else {
-          print(msg.flag);
+          //print(msg.flag);
         }
       });
     }
 
-    if (input[0] === 'cancel') {
+    if (input[0] === "cancel") {
       const body = { id: appSocket.id, pid: pid };
       axios.post(`http://localhost:4000/kill`, body);
-    }
-    else {
+    } else {
       const body = { id: appSocket.id, command: input.join(" ") };
       axios.post(`http://localhost:4000/execute`, body);
     }
@@ -69,10 +68,10 @@ function App() {
     >
       {!isConnected && <button onClick={connectWithServer}>Connect</button>}
       <Terminal
-        color="green"
-        backgroundColor="black"
-        barColor="black"
-        style={{ fontWeight: "bold", fontSize: "1em" }}
+        color="black"
+        backgroundColor="white"
+        barColor="white"
+        style={{ fontWeight: "bold", fontSize: "1.5em" }}
         commands={{
           "open-google": () => window.open("https://www.google.com/", "_blank"),
           popup: () => alert("Terminal in React"),
@@ -84,7 +83,7 @@ function App() {
           alert: "alert",
           popup: "alert",
         }}
-        msg="You can write anything here. Example - Hello! My name is Foo and I like Bar."
+        msg="You can write shell commands here."
         commandPassThrough={handleCommand}
       />
     </div>
