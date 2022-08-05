@@ -3,7 +3,7 @@ import axios from "axios";
 import io from "socket.io-client";
 import "./App.css";
 import Terminal from "terminal-in-react";
-import { SocketEvents, ProcessFlags } from "./Models"
+import { SocketEvents, ProcessFlags } from "./Models";
 
 function App() {
   const endpoint = "http://localhost:4000";
@@ -47,11 +47,10 @@ function App() {
       });
     }
 
-    if (input[0] === 'cancel') {
+    if (input[0] === "cancel") {
       const body = { id: appSocket.id, pid: pid };
       axios.post(`http://localhost:4000/kill`, body);
-    }
-    else {
+    } else {
       const body = { id: appSocket.id, command: input.join(" ") };
       axios.post(`http://localhost:4000/execute`, body);
     }
@@ -72,7 +71,7 @@ function App() {
         color="green"
         backgroundColor="black"
         barColor="black"
-        style={{ fontWeight: "bold", fontSize: "1em" }}
+        style={{ fontWeight: "bold", fontSize: "2em" }}
         commands={{
           "open-google": () => window.open("https://www.google.com/", "_blank"),
           popup: () => alert("Terminal in React"),

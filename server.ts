@@ -23,10 +23,13 @@ io.on("connection", (socket: Socket) => {
   socket.emit(SocketEvents.MESSAGE, `hello ${socket.id}`);
 });
 
-myEmitter.on(MyEmitterEvents.THREAD_RESPONSE, (threadResponse: WorkerTaskResponse) => {
-  console.log("an event occurred!", threadResponse.flag);
-  io.to(threadResponse.clientId).emit(SocketEvents.MESSAGE, threadResponse);
-});
+myEmitter.on(
+  MyEmitterEvents.THREAD_RESPONSE,
+  (threadResponse: WorkerTaskResponse) => {
+    console.log("an event occurred!", threadResponse.flag);
+    io.to(threadResponse.clientId).emit(SocketEvents.MESSAGE, threadResponse);
+  }
+);
 
 app.get("/health", function (req: express.Request, res: express.Response) {
   res.send(`Hello World! ${new Date()}`);
@@ -35,8 +38,10 @@ app.get("/health", function (req: express.Request, res: express.Response) {
 app.post("/execute", function (req: express.Request, res: express.Response) {
   const command = req.body.command as string;
   const clientId = req.body.id;
+  console.log("exec", command, clientId);
   runWorkerThread(command, clientId)
     .then(function (result: any) {
+      console.log("then", result);
       res.status(200).send();
     })
     .catch(function (err) {
@@ -60,7 +65,7 @@ app.get("/getpid", function (req: express.Request, res: express.Response) {
 });
 
 app.post("/kill", function (req: express.Request, res: express.Response) {
-  console.log('kill', req.body);
+  console.log("kill", req.body);
   const pid = req.body.pid as string;
   const id = req.body.id;
   process.kill(parseInt(pid));

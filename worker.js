@@ -1,6 +1,7 @@
-const path = require('path');
-const { workerData } = require('worker_threads');
- 
-require('ts-node').register();
+const path = require("path");
+const { workerData } = require("worker_threads");
+
+require("ts-node").register();
 // require(path.resolve(__dirname, workerData.path));
-require(path.resolve(__dirname, './worker.ts'));
+require(path.resolve(__dirname, "./worker.ts"));
+console.log("registered");

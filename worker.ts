@@ -16,8 +16,8 @@ const callbackFn = (errror: any, data: string): void => {
   parent.postMessage(processResponse);
 };
 
-const STDOUT_ON_DATA_EVENT = 'data';
-
+const STDOUT_ON_DATA_EVENT = "data";
+console.log("executing...");
 const proc: ChildProcess = exec(dataParameter.command, callbackFn);
 console.dir(proc.pid);
 if (proc != null && proc.stdout != null) {
