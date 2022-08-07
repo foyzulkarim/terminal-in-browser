@@ -44,21 +44,6 @@ app.post("/execute", function (req: express.Request, res: express.Response) {
     });
 });
 
-// getpid and kill api are in development
-app.get("/getpid", function (req: express.Request, res: express.Response) {
-  const pid = req.query.pid as string;
-  find("pid", parseInt(pid)).then(
-    function (list: any) {
-      console.log(list);
-      res.send(list);
-    },
-    function (err: any) {
-      console.log(err.stack || err);
-      res.send(err);
-    }
-  );
-});
-
 app.post("/kill", function (req: express.Request, res: express.Response) {
   console.log('kill', req.body);
   const pid = req.body.pid as string;
