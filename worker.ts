@@ -16,10 +16,16 @@ const callbackFn = (errror: any, data: string): void => {
   parent.postMessage(processResponse);
 };
 
-const STDOUT_ON_DATA_EVENT = 'data';
+const STDOUT_ON_DATA_EVENT = "data";
+let command = `${dataParameter.command}`;
+if (dataParameter.shouldAddDocker) {
+  command = `docker exec ${dataParameter.clientId} ${command}`;
+}
 
-const proc: ChildProcess = exec(dataParameter.command, callbackFn);
-console.dir(proc.pid);
+// const proc: ChildProcess = exec(`docker exec -it ${dataParameter.clientId} ${dataParameter.command}`, callbackFn);
+const proc: ChildProcess = exec(command, callbackFn);
+
+console.dir(command, proc.pid);
 if (proc != null && proc.stdout != null) {
   proc.stdout.on(STDOUT_ON_DATA_EVENT, (data: string) => {
     console.log("ONGOING", dataParameter.clientId, data);

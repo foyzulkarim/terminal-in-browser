@@ -1,33 +1,33 @@
 export class WorkerDataType {
-    command!: string;
-    clientId!: string;
-
-    // constructor(command: string, clientId: string) {
-    //     this.command = command;
-    //     this.clientId = clientId;
-    // }
+  command!: string;
+  clientId!: string;
+  shouldAddDocker!: boolean;
+  constructor() {
+    this.shouldAddDocker = true;
+  }
 }
 
-
 export class WorkerTaskResponse {
-    flag!: string;
-    pid!: number;
-    clientId!: string;
-    data!: string;
+  flag!: string;
+  pid!: number;
+  clientId!: string;
+  data!: string;
 }
 
 export enum MyEmitterEvents {
-    THREAD_RESPONSE = 'thread-response'
+  THREAD_RESPONSE = "thread-response",
 }
 
 export enum ThreadEvents {
-    MESSAGE = "message"
+  MESSAGE = "message",
 }
 
 export enum SocketEvents {
-    MESSAGE = "message"
+  MESSAGE = "message",
 }
 
 export enum ProcessFlags {
-    ONGOING = "ongoing", DONE = "done", ERROR = "error"
+  ONGOING = "ongoing",
+  DONE = "done",
+  ERROR = "error",
 }

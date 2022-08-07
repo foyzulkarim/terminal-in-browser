@@ -1,3 +1,5 @@
+#!/usr/bin/env zx
+
 import express = require("express");
 var cors = require("cors");
 var bodyParser = require("body-parser");
@@ -5,7 +7,6 @@ var bodyParser = require("body-parser");
 import EventEmitter from "./MyEmitter";
 const { EventEmitterInstance: myEmitter } = EventEmitter;
 
-const find = require("find-process");
 import { Socket } from "socket.io";
 import { runWorkerThread } from "./executor";
 import { MyEmitterEvents, SocketEvents, WorkerTaskResponse } from "./Models";
@@ -20,13 +21,38 @@ var io = require("socket.io")(http);
 
 io.on("connection", (socket: Socket) => {
   console.log("connected", socket.id);
-  socket.emit(SocketEvents.MESSAGE, `hello ${socket.id}`);
+  socket.on("disconnect", (reason) => {
+    const stopAndRemoveDockerContainerCommand = `docker stop ${socket.id} && docker rm ${socket.id}`;
+    runWorkerThread(stopAndRemoveDockerContainerCommand, socket.id, false).then(
+      (result) => {
+        console.log(
+          `docker container ${socket.id} stopped and removed`,
+          result
+        );
+      }
+    );
+  });
+  const startNewDockerCommand = `docker run --name ${socket.id} -id alpine`;
+  runWorkerThread(startNewDockerCommand, socket.id, false)
+    .then(function (result: any) {
+      console.log(`docker container ${socket.id} started`, result);
+      socket.emit(SocketEvents.MESSAGE.toString(), `hello from ${socket.id}`);
+    })
+    .catch(function (err) {
+      socket.emit(
+        SocketEvents.MESSAGE,
+        `Error occurred while spinning container ${socket.id}`
+      );
+    });
 });
 
-myEmitter.on(MyEmitterEvents.THREAD_RESPONSE, (threadResponse: WorkerTaskResponse) => {
-  console.log("an event occurred!", threadResponse.flag);
-  io.to(threadResponse.clientId).emit(SocketEvents.MESSAGE, threadResponse);
-});
+myEmitter.on(
+  MyEmitterEvents.THREAD_RESPONSE,
+  (threadResponse: WorkerTaskResponse) => {
+    console.log("an event occurred!", threadResponse.flag);
+    io.to(threadResponse.clientId).emit(SocketEvents.MESSAGE, threadResponse);
+  }
+);
 
 app.get("/health", function (req: express.Request, res: express.Response) {
   res.send(`Hello World! ${new Date()}`);
@@ -45,7 +71,7 @@ app.post("/execute", function (req: express.Request, res: express.Response) {
 });
 
 app.post("/kill", function (req: express.Request, res: express.Response) {
-  console.log('kill', req.body);
+  console.log("kill", req.body);
   const pid = req.body.pid as string;
   const id = req.body.id;
   process.kill(parseInt(pid));
