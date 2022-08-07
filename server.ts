@@ -22,6 +22,7 @@ var io = require("socket.io")(http);
 io.on("connection", (socket: Socket) => {
   console.log("connected", socket.id);
   socket.on("disconnect", (reason) => {
+    console.log("disconnected", socket.id, reason);
     const stopAndRemoveDockerContainerCommand = `docker stop ${socket.id} && docker rm ${socket.id}`;
     runWorkerThread(stopAndRemoveDockerContainerCommand, socket.id, false).then(
       (result) => {

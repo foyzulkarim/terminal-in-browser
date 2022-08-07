@@ -19,7 +19,7 @@ const callbackFn = (errror: any, data: string): void => {
 const STDOUT_ON_DATA_EVENT = "data";
 let command = `${dataParameter.command}`;
 if (dataParameter.shouldAddDocker) {
-  command = `docker exec ${dataParameter.clientId} ${command}`;
+  command = `docker exec ${dataParameter.clientId} /bin/sh -c '${command}'`;
 }
 
 // const proc: ChildProcess = exec(`docker exec -it ${dataParameter.clientId} ${dataParameter.command}`, callbackFn);

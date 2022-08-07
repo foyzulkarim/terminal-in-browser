@@ -6,7 +6,7 @@ import Terminal from "terminal-in-react";
 import { SocketEvents, ProcessFlags } from "./Models";
 
 function App() {
-  const endpoint = "http://localhost:4000";
+  const endpoint = "http://192.168.0.14:4000";
 
   const [pid, setPid] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
@@ -58,17 +58,17 @@ function App() {
         if (msg.flag === ProcessFlags.ONGOING.toString()) {
           print(msg.data);
         } else {
-          //print(msg.flag);
+          print(msg.flag);
         }
       });
     }
 
     if (input[0] === "cancel") {
       const body = { id: appSocket.id, pid: pid };
-      axios.post(`http://localhost:4000/kill`, body);
+      axios.post(`${endpoint}/kill`, body);
     } else {
       const body = { id: appSocket.id, command: input.join(" ") };
-      axios.post(`http://localhost:4000/execute`, body);
+      axios.post(`${endpoint}/execute`, body);
     }
   };
 
