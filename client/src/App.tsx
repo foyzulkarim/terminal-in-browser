@@ -11,6 +11,7 @@ function App() {
   const [pid, setPid] = useState(0);
   const [isConnected, setIsConnected] = useState(false);
   const [appSocket, setAppSocket] = useState<any>();
+  const [headerMessage, setHeaderMessage] = useState("Initializing...");
 
   useEffect(() => {
     if (!isConnected) {
@@ -19,16 +20,31 @@ function App() {
   }, [isConnected]);
 
   const connectWithServer = () => {
-    console.log("hello");
+    console.log("connecting with server");
+    setHeaderMessage("Connecting with server...");
     const socket = io(endpoint, {
       transports: ["websocket"],
     });
     console.log(socket);
     socket.on("connect", () => {
-      console.log(socket.id); //eg. x8WIv7-mJelg7on_ALbx
+      console.log("connected: ", socket.id); //eg. x8WIv7-mJelg7on_ALbx
+      setHeaderMessage(`Connected with server. Id: ${socket.id}`);
       setAppSocket(socket);
       setIsConnected(true);
     });
+  };
+
+  const handleKeyDown = (event: {
+    preventDefault: () => void;
+    which: number;
+    ctrlKey: any;
+    metaKey: any;
+  }) => {
+    let charCode = String.fromCharCode(event.which).toLowerCase();
+    if ((event.ctrlKey || event.metaKey) && charCode === "c") {
+      console.log("CTRL+C Pressed");
+      handleCommand(["cancel"], () => {});
+    }
   };
 
   const handleCommand = (input: any, print: Function) => {
@@ -36,7 +52,7 @@ function App() {
     const fn = `$${SocketEvents.MESSAGE}`;
     if (!appSocket._callbacks[fn]) {
       appSocket.on(SocketEvents.MESSAGE, (msg: any) => {
-        console.log(msg);
+        console.log(msg.flag);
         setPid(msg.pid);
 
         if (msg.flag === ProcessFlags.ONGOING.toString()) {
@@ -65,27 +81,20 @@ function App() {
         height: "100vh",
         backgroundColor: "black",
       }}
+      onKeyDown={handleKeyDown}
     >
       {!isConnected && <button onClick={connectWithServer}>Connect</button>}
-      <Terminal
-        color="black"
-        backgroundColor="white"
-        barColor="white"
-        style={{ fontWeight: "bold", fontSize: "1.5em" }}
-        commands={{
-          "open-google": () => window.open("https://www.google.com/", "_blank"),
-          popup: () => alert("Terminal in React"),
-          // cancel: cancelCommand,
-        }}
-        description={{
-          "open-google": "opens google.com",
-          showmsg: "shows a message",
-          alert: "alert",
-          popup: "alert",
-        }}
-        msg="You can write shell commands here."
-        commandPassThrough={handleCommand}
-      />
+      {isConnected && (
+        <Terminal
+          color="black"
+          backgroundColor="white"
+          barColor="white"
+          style={{ fontWeight: "bold", fontSize: "1.5em" }}
+          msg={headerMessage}
+          commandPassThrough={handleCommand}
+          startState="maximised"
+        />
+      )}
     </div>
   );
 }

@@ -1,13 +1,7 @@
-import { Worker, workerData, WorkerOptions } from "worker_threads";
+import { Worker } from "worker_threads";
 import { MyEmitterEvents, ThreadEvents, WorkerDataType, WorkerTaskResponse } from "./Models";
 import EventEmitter from "./MyEmitter";
 const { EventEmitterInstance: myEmitter } = EventEmitter;
-
-class AppWorker extends Worker {
-  constructor(fileName: string, parameter: WorkerDataType) {
-    super(fileName, { workerData: parameter });
-  }
-}
 
 export const runWorkerThread = (command: string, clientId: string) => {
   return new Promise((resolve, reject) => {
