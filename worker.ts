@@ -28,7 +28,7 @@ const proc: ChildProcess = exec(command, callbackFn);
 console.dir(command, proc.pid);
 if (proc != null && proc.stdout != null) {
   proc.stdout.on(STDOUT_ON_DATA_EVENT, (data: string) => {
-    console.log("ONGOING", dataParameter.clientId, data);
+    console.log("ONGOING", dataParameter.clientId);
     const parent = parentPort as MessagePort;
     const processResponse: WorkerTaskResponse = {
       flag: ProcessFlags.ONGOING.toString(),

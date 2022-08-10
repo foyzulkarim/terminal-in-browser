@@ -1,5 +1,4 @@
-#!/usr/bin/env zx
-
+import { execSync } from "child_process";
 import express = require("express");
 var cors = require("cors");
 var bodyParser = require("body-parser");
@@ -23,20 +22,20 @@ io.on("connection", (socket: Socket) => {
   console.log("connected", socket.id);
   socket.on("disconnect", (reason) => {
     console.log("disconnected", socket.id, reason);
-    const stopAndRemoveDockerContainerCommand = `docker stop ${socket.id} && docker rm ${socket.id}`;
+    const stopAndRemoveDockerContainerCommand = `docker kill ${socket.id}`;
     runWorkerThread(stopAndRemoveDockerContainerCommand, socket.id, false).then(
-      (result) => {
+      (result: any) => {
         console.log(
           `docker container ${socket.id} stopped and removed`,
-          result
+          result.clientId
         );
       }
     );
   });
-  const startNewDockerCommand = `docker run --name ${socket.id} -id alpine`;
+  const startNewDockerCommand = `docker run --name ${socket.id} -id --rm alpine`;
   runWorkerThread(startNewDockerCommand, socket.id, false)
     .then(function (result: any) {
-      console.log(`docker container ${socket.id} started`, result);
+      console.log(`docker container ${socket.id} started`, result.clientId);
       socket.emit(SocketEvents.MESSAGE.toString(), `hello from ${socket.id}`);
     })
     .catch(function (err) {
@@ -58,6 +57,40 @@ myEmitter.on(
 app.get("/health", function (req: express.Request, res: express.Response) {
   res.send(`Hello World! ${new Date()}`);
 });
+
+app.get("/count", function (req: express.Request, res: express.Response) {
+  const dockerResult = execSync("docker ps | wc -l", { encoding: "utf8" });
+  const socketCurrentConnection = io.engine.clientsCount;
+  res.send({
+    socketsCount: socketCurrentConnection,
+    dockerCount: dockerResult,
+  });
+});
+
+app.get(
+  "/cleanup",
+  async function (req: express.Request, res: express.Response) {
+    const dockerResult = execSync("docker ps --format '{{.Names}}'", {
+      encoding: "utf8",
+    });
+    const names = dockerResult.split("\n").filter((name) => !!name);
+    const sockets: any[] = io.of("/").sockets;
+    const ids: string[] = [];
+    sockets.forEach((socket) => ids.push(socket.id));
+    const containersToKill = names.filter((name) => !ids.includes(name));
+    console.log("containersToKill", containersToKill);
+    containersToKill.forEach((name) => {
+      const killContainerCommand = `docker kill ${name}`;
+      console.log("killing container", name);
+      execSync(killContainerCommand, { encoding: "utf8" });
+    });
+
+    res.send({
+      killed: containersToKill,
+      alive: ids,
+    });
+  }
+);
 
 app.post("/execute", function (req: express.Request, res: express.Response) {
   const command = req.body.command as string;

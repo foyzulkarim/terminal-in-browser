@@ -19,6 +19,7 @@
     "react-scripts": "4.0.3",
     "react-terminal-component": "^1.5.0",
     "react-terminal-ui": "^0.1.13",
+    "serve": "^14.0.1",
     "socket.io-client": "^4.1.2",
     "styled-components": "^5.3.0",
     "terminal-in-react": "^4.3.1",
@@ -29,7 +30,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "serve": "serve -s build"
   },
   "eslintConfig": {
     "extends": [
